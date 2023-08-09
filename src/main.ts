@@ -1,19 +1,30 @@
-import { createApp } from "vue";
-import App from "./App.vue";
-import VueGtag from "vue-gtag";
+import { ViteSSG } from 'vite-ssg'
+import generatedRoutes from 'virtual:generated-pages'
+import { setupLayouts } from 'virtual:generated-layouts'
+import App from './App.vue'
 
-import { ElRadioGroup, ElRadio, ElRadioButton, ElButton } from "element-plus";
-// import "element-plus/lib/theme-chalk/index.css";
-import "element-theme-ink";
+// windicss layers
+import 'virtual:windi-base.css'
+import 'virtual:windi-components.css'
 
-const app = createApp(App);
-app.use(VueGtag, {
-  config: {
-    id: "G-FMH4WDW53W",
+// your custom styles here
+import './styles/vars.scss'
+import './styles/main.scss'
+import './styles/index.scss'
+
+// windicss utilities should be the last style import
+import 'virtual:windi-utilities.css'
+// windicss devtools support (dev only)
+import 'virtual:windi-devtools'
+
+const routes = setupLayouts(generatedRoutes)
+
+// https://github.com/antfu/vite-ssg
+export const createApp = ViteSSG(
+  App,
+  { routes },
+  (ctx) => {
+    // install all modules under `modules/`
+    Object.values(import.meta.globEager('./modules/*.ts')).map(i => i.install?.(ctx))
   },
-});
-app.use(ElButton);
-app.use(ElRadioGroup);
-app.use(ElRadio);
-app.use(ElRadioButton);
-app.mount("#app");
+)
